@@ -8,7 +8,12 @@
 import Foundation
 
 class NetworkService {
-    static let shared = NetworkService()
+    static var shared = NetworkService()
+    let session: URLSessionProtocol
+    
+    init(session: URLSessionProtocol = URLSession.shared) {
+        self.session = session
+    }
     
     // MARK: Fetching Photos
     
@@ -32,7 +37,7 @@ class NetworkService {
         }
         
         // fetch response from flickr
-        let (data, _) = try await URLSession.shared.data(from: url)
+        let (data, _) = try await session.data(from: url)
         
         // attempt to decode the response to be a valid Photo type
         do {
