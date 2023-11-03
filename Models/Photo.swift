@@ -14,4 +14,5 @@ struct Photo: Codable, Identifiable, Equatable {
     let title: String
     let secret: String
     let server: String
+    let farm: Int
 }

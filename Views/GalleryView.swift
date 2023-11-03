@@ -13,19 +13,22 @@ struct GalleryView: View {
     var body: some View {
         ScrollView {
             LazyVStack { // LazyVStack to increase performance
-                ForEach(viewModel.photos, id: \.id) { photo in
-                    Text(photo.title)
+                ForEach(viewModel.userPhotoItems, id: \.id) { item in
+                    Text(item.username)
+                    Text(item.photoTitle)
+                    Text(item.photo.server)
+                    Text("\(item.photo.farm)")
+                    AsyncImage(url: URL(string: "https://live.staticflickr.com/\(item.photo.server)/\(item.photo.id)_\(item.photo.secret).jpg"))
                         .onAppear {
-                            if self.viewModel.photos.last == photo && !viewModel.isFetching {
+                            if self.viewModel.userPhotoItems.last == item && !viewModel.isFetching {
                                 viewModel.loadAdditionalPhotos(query: "Yorkshire")
                             }
                         }
-                    
                 }
             }
         }
         .onAppear {
-            viewModel.loadInitialPhotos(query: "Yorkshire")
+            viewModel.loadInitialPhotoItems(query: "Yorkshire")
         }
     }
 }
