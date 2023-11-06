@@ -13,4 +13,10 @@ extension URLSession: URLSessionProtocol {
         let request = URLRequest(url: url)
         return try await self.data(for: request)
     }
+    
+    func dataTask(with request: URLRequest) async throws -> (Data, URLResponse) {
+        return try await self.data(for: request)
+    }
+    
+    
 }

@@ -10,4 +10,5 @@ import Foundation
 // protocol that both URLSession and MockURLSession will adhere to
 protocol URLSessionProtocol {
     func data(from url: URL) async throws -> (Data, URLResponse)
+    func dataTask(with request: URLRequest) async throws -> (Data, URLResponse)
 }

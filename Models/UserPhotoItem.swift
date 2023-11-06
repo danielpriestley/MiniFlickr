@@ -8,6 +8,7 @@
 import Foundation
 
 struct UserPhotoItem: Identifiable, Equatable {
+    let id = UUID()
     let photo: Photo
     let user: User
     
@@ -24,17 +25,13 @@ struct UserPhotoItem: Identifiable, Equatable {
         return user.userInfo.username._content
     }
     
-//    var server: String {
-//        return photo.server
-//    }
-//    
-//    var farm: String {
-//        return String(from: photo.farm)
-//    }
-    
-    // create id to adhere to identifable protocol
-    var id: String {
-        return "\(photo.id)\(user.userInfo.id)"
+    var uploadDate: String {
+        let date = Date(timeIntervalSince1970: Double(photo.dateupload) ?? 0)
+        let dateFormatter = DateFormatter()
+        
+        dateFormatter.dateFormat = "dd•MM•yyyy"
+        let dateString = dateFormatter.string(from: date)
+        return dateString
     }
     
     static func == (lhs: UserPhotoItem, rhs: UserPhotoItem) -> Bool {

@@ -15,20 +15,10 @@ class GalleryViewModel: ObservableObject {
     
     let network = NetworkService.shared
     
-    func loadInitialPhotos(query: String) {
+    func loadInitialPhotoItems(query: String) async {
         Task {
             do {
-                self.photos = try await network.fetchPhotos(withQuery: query, page: 1)
-            } catch {
-                print("An error occured: \(error)")
-            }
-        }
-    }
-    
-    func loadInitialPhotoItems(query: String) {
-        Task {
-            do {
-                self.userPhotoItems = try await network.fetchUserPhotoItems(forQuery: query, page: 1)
+                self.userPhotoItems = try await network.fetchUserPhotoItems(withQuery: query, page: 1)
             } catch {
                 print("An error occured: \(error)")
             }
@@ -41,9 +31,8 @@ class GalleryViewModel: ObservableObject {
         
         Task {
             do {
-               // limiting results to 30 per page for performance
-                let newPhotos = try await network.fetchPhotos(withQuery: query, page: (photos.count / 30) + 1)
-                self.photos.append(contentsOf: newPhotos)
+                let newUserPhotoItems = try await network.fetchUserPhotoItems(withQuery: query, page: (userPhotoItems.count / 10) + 1)
+                self.userPhotoItems.append(contentsOf: newUserPhotoItems)
             } catch {
                 print("An error occured while fetching new photos: \(error)")
             }
@@ -53,18 +42,18 @@ class GalleryViewModel: ObservableObject {
         isFetching = false
     }
     
-    func loadAdditionalPhotos(query: String) {
-        isFetching = true // enable fetching state
-        Task {
-            do {
-                // limiting results to 10 per page due to vertical height of image containers to increase performance
-                let newPhotos = try await network.fetchPhotos(withQuery: query, page: (photos.count / 50) + 1)
-                self.photos.append(contentsOf: newPhotos)
-            } catch {
-                print("An error occured while fetching new photos: \(error)")
-            }
+    
+    func getPhotoUrl(photo: Photo) -> URL? {
+        return network.constructPhotoUrl(photo: photo)
+    }
+    
+    func getTagsFromPhoto(photo: Photo, tagAmount: Int) -> [String] {
+        guard let tagsString = photo.tags else {
+            return []
         }
         
-        isFetching = false // disable fetching state
+        let allTags = tagsString.components(separatedBy: " ")
+        let finalTags = Array(allTags.prefix(tagAmount))
+        return finalTags
     }
 }

@@ -7,12 +7,14 @@
 
 import SwiftUI
 
-struct UserGalleryView: View {
+struct UserView: View {
+    var user: User
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        Text(user.userInfo.username._content)
     }
 }
 
-#Preview {
-    UserGalleryView()
-}
+//#Preview {
+//    UserGalleryView()
+//}

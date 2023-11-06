@@ -34,12 +34,16 @@ class NetworkService {
         let photos: PhotosContainer
     }
     
+    struct PhotoInfoResponse: Codable {
+        let photo: PhotoInfo
+    }
+    
     @MainActor
     func fetchPhotos(withQuery query: String, page: Int) async throws -> [Photo] {
         let decoder = JSONDecoder()
         
         // ensure url is valid
-        guard let url = URL(string: "https://www.flickr.com/services/rest/?method=flickr.photos.search&api_key=\(Secrets.apiKey)&tags=\(query)&format=json&nojsoncallback=1&safe_search=1&page=\(page)&per_page=50")
+        guard let url = URL(string: "https://www.flickr.com/services/rest/?method=flickr.photos.search&api_key=\(Secrets.apiKey)&tags=\(query)&extras=tags,date_upload,license,description, owner_name,icon_server&format=json&nojsoncallback=1&safe_search=1&page=\(page)&per_page=10")
         else {
             fatalError("Invalid URL")
         }
@@ -55,6 +59,36 @@ class NetworkService {
             print("Failed to decode JSON with error: \(error)")
             throw error
         }
+    }
+    
+    @MainActor
+    func fetchMoreUserPhotos(userId: String) async throws -> [Photo] {
+        let decoder = JSONDecoder()
+        
+        // ensure url is valid
+        guard let url = URL(string: "https://www.flickr.com/services/rest/?method=flickr.people.getPublicPhotos&api_key=\(Secrets.apiKey)&format=json&nojsoncallback=1&safe_search=1&extras=tags,date_upload,license,description, owner_name,icon_server&user_id=\(userId)&per_page=5") else {
+            fatalError("Invalid URL")
+        }
+        
+        // fetch response from flickr
+        let (data, _) = try await session.data(from: url)
+        print("fetching data from \(url)")
+        
+        // attempt to decode the response to be a valid Photo type
+        do {
+            let photosResponse = try decoder.decode(PhotosResponse.self, from: data)
+            print(photosResponse.photos.photo)
+            return photosResponse.photos.photo
+        } catch {
+            print("Failed to decode JSON with error: \(error)")
+            throw error
+        }
+    }
+    
+    @MainActor
+    func constructPhotoUrl(photo: Photo) -> URL? {
+        let urlString = "https://live.staticflickr.com/\(photo.server)/\(photo.id)_\(photo.secret).jpg"
+        return URL(string: urlString)
     }
     
     
@@ -123,13 +157,10 @@ class NetworkService {
         
     }
     
-    
-    
-    
     // MARK: Fetching UserPhotoItems\
     
     @MainActor
-    func fetchUserPhotoItems(forQuery query: String, page: Int) async throws -> [UserPhotoItem] {
+    func fetchUserPhotoItems(withQuery query: String, page: Int) async throws -> [UserPhotoItem] {
         let photos = try await fetchPhotos(withQuery: query, page: page)
         
         var userProfiles: [String: User] = [:]
@@ -139,6 +170,7 @@ class NetworkService {
         
         // fetch the user profiles in parallel to fetching the photos
         await withTaskGroup(of: (String, User?)?.self) { group in
+            
             for userId in uniqueUserIds {
                 group.addTask { [weak self] in
                     do {

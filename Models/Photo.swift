@@ -15,4 +15,26 @@ struct Photo: Codable, Identifiable, Equatable {
     let secret: String
     let server: String
     let farm: Int
+    let tags: String?
+    var description: NestedContentWrapper
+    let license: String
+    let dateupload: String
+    let ownername: String
+    let iconserver: String
+    
+    var descriptionContent: String {
+        return description._content
+    }
+    
+    static func == (lhs: Photo, rhs: Photo) -> Bool {
+        return lhs.id == rhs.id
+    }
+}
+
+struct PhotoInfo: Codable {
+    let id: String
+    let secret: String
+    let server: String
+    let farm: Int
+    let originalformat: String
 }
