@@ -18,9 +18,10 @@ struct UserProfileResponse: Codable {
 struct UserInfo: Codable {
     let id: String
     let nsid: String
-    let username: NestedContentWrapper
+    let username: NestedStringContentWrapper
     let iconServer: String?
     let iconFarm: Int
+    var photos: UserPhotos?
     
     enum CodingKeys: String, CodingKey {
         case id
@@ -28,17 +29,30 @@ struct UserInfo: Codable {
         case username
         case iconServer = "iconserver"
         case iconFarm = "iconfarm"
+        case photos
     }
 }
 
-struct NestedContentWrapper: Codable {
+struct NestedStringContentWrapper: Codable {
     let _content: String
+}
+
+struct NestedNumberContentWrapper: Codable {
+    let _content: Int
+}
+
+struct UserPhotos: Codable {
+    let count: NestedNumberContentWrapper
+    
+    enum CodingKeys: String, CodingKey {
+        case count
+    }
 }
 
 struct ProfileInfo: Codable {
     // additional profile info
     var occupation: String?
-    var description: NestedContentWrapper?
+    var description: NestedStringContentWrapper?
     var city: String?
     var firstName: String?
     var lastName: String?
@@ -67,7 +81,5 @@ struct User: Codable {
             // if the icon server doesn't exist (it has a value of 0), return the default icon
             return URL(string: "https://www.flickr.com/images/buddyicon.gif")!
         }
-        
-        
     }
 }

@@ -11,7 +11,7 @@ import Foundation
 class PhotoDetailViewModel: ObservableObject {
     let network = NetworkService.shared
     
-    @Published var userPhotos: [Photo] = []
+    @Published var userPhotos: [UserPhotoItem] = []
     
     func getPhotoUrl(photo: Photo) -> URL? {
         return network.constructPhotoUrl(photo: photo)
@@ -28,10 +28,10 @@ class PhotoDetailViewModel: ObservableObject {
         return finalTags
     }
     
-    func getMorePhotosFromUser(userId: String) async {
+    func getMorePhotosFromUser(user: User, currentPhotoId: String) async {
         Task {
             do {
-                self.userPhotos = try await network.fetchMoreUserPhotos(userId: userId)
+                self.userPhotos = try await network.fetchPhotosForUser(user: user, currentPhotoId: currentPhotoId, perPage: 5, page: 1)
                 print("updated user photos")
             }
             catch {

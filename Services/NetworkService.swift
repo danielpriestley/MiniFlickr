@@ -62,11 +62,11 @@ class NetworkService {
     }
     
     @MainActor
-    func fetchMoreUserPhotos(userId: String) async throws -> [Photo] {
+    func fetchPhotosForUser(user: User, currentPhotoId: String? = nil, perPage: Int, page: Int) async throws -> [UserPhotoItem] {
         let decoder = JSONDecoder()
         
         // ensure url is valid
-        guard let url = URL(string: "https://www.flickr.com/services/rest/?method=flickr.people.getPublicPhotos&api_key=\(Secrets.apiKey)&format=json&nojsoncallback=1&safe_search=1&extras=tags,date_upload,license,description, owner_name,icon_server&user_id=\(userId)&per_page=5") else {
+        guard let url = URL(string: "https://www.flickr.com/services/rest/?method=flickr.people.getPublicPhotos&api_key=\(Secrets.apiKey)&format=json&nojsoncallback=1&safe_search=1&extras=tags,date_upload,license,description, owner_name,icon_server&user_id=\(user.userInfo.id)&per_page=\(perPage)&page=\(page)") else {
             fatalError("Invalid URL")
         }
         
@@ -77,8 +77,19 @@ class NetworkService {
         // attempt to decode the response to be a valid Photo type
         do {
             let photosResponse = try decoder.decode(PhotosResponse.self, from: data)
-            print(photosResponse.photos.photo)
-            return photosResponse.photos.photo
+            
+            // filter to avoid showing the same image already within the PhotoDetailView
+            let filteredPhotos = photosResponse.photos.photo.filter { $0.id != currentPhotoId }
+            
+            // map photos to the UserPhotoItem
+            return filteredPhotos.compactMap { photo in
+                if user.userInfo.id == photo.owner {
+                    return UserPhotoItem(photo: photo, user: user)
+                } else {
+                    print("user profile not found for \(photo.owner)")
+                    return nil
+                }
+            }
         } catch {
             print("Failed to decode JSON with error: \(error)")
             throw error
@@ -88,6 +99,11 @@ class NetworkService {
     @MainActor
     func constructPhotoUrl(photo: Photo) -> URL? {
         let urlString = "https://live.staticflickr.com/\(photo.server)/\(photo.id)_\(photo.secret).jpg"
+        return URL(string: urlString)
+    }
+    
+    func constructGalleryThumbnailUrl(gallery: Gallery) -> URL? {
+        let urlString = "https://live.staticflickr.com/\(gallery.primaryPhotoServer)/\(gallery.primaryPhotoId)_\(gallery.primaryPhotoSecret).jpg"
         return URL(string: urlString)
     }
     
@@ -157,8 +173,25 @@ class NetworkService {
         
     }
     
-    // MARK: Fetching UserPhotoItems\
+    @MainActor
+    func fetchUserGalleries(userId: String) async throws -> [Gallery] {
+        let decoder = JSONDecoder()
+        
+        guard let url = URL(string:
+                                "https://www.flickr.com/services/rest/?api_key=\(Secrets.apiKey)&format=json&nojsoncallback=1&user_id=\(userId)&method=flickr.galleries.getList")
+        else {
+            fatalError("Invalid URL")
+        }
+        
+        let (data, _) = try await session.data(from: url)
+        
+        
+        let galleryResponse = try decoder.decode(GalleryResponse.self, from: data)
+        print(galleryResponse)
+        return galleryResponse.galleries.gallery
+    }
     
+    // MARK: Fetching UserPhotoItems\
     @MainActor
     func fetchUserPhotoItems(withQuery query: String, page: Int) async throws -> [UserPhotoItem] {
         let photos = try await fetchPhotos(withQuery: query, page: page)
@@ -203,6 +236,13 @@ class NetworkService {
         
     }
     
+    // MARK: Fetch user galleries
+    // https://www.flickr.com/services/api/flickr.galleries.getList.html
+    
+    @MainActor
+    func fetchUserGalleries(userId: String) {
+        
+    }
     
     
     

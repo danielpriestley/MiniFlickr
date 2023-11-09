@@ -16,7 +16,7 @@ struct Photo: Codable, Identifiable, Equatable {
     let server: String
     let farm: Int
     let tags: String?
-    var description: NestedContentWrapper
+    var description: NestedStringContentWrapper
     let license: String
     let dateupload: String
     let ownername: String

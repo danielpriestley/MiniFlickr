@@ -1,16 +1,16 @@
 //
-//  RemoteImageView.swift
+//  UserGalleryItem.swift
 //  MiniFlickr
 //
-//  Created by Daniel Priestley on 04/11/2023.
+//  Created by Daniel Priestley on 08/11/2023.
 //
+
 
 import SwiftUI
 
-struct RemoteImageView: View {
+struct UserGalleryItem: View {
     @State private var image: Image?
     @State private var isLoading = false
-    
     let url: URL
     
     var body: some View {
@@ -18,9 +18,8 @@ struct RemoteImageView: View {
             if let image = image {
                 image
                     .resizable()
-                    .scaledToFit()
+                    .scaledToFill()
                     .clipShape(RoundedRectangle(cornerRadius: 4))
-                
             } else if isLoading {
                 ProgressView()
             } else {

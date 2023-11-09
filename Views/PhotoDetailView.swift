@@ -62,7 +62,7 @@ struct PhotoDetailView: View {
                     }
                 }
                 .padding(.bottom, 16)
-                    
+                
                 HStack(alignment: .bottom) {
                     Text("More photos from")
                         .font(.subheadline)
@@ -83,38 +83,37 @@ struct PhotoDetailView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack {
                         ForEach(viewModel.userPhotos, id: \.id) { userPhoto in
-                            NavigationLink(destination: PhotoDetailView(photo: UserPhotoItem(photo: userPhoto, user: photo.user))) {
-                                RemoteImageView(url: viewModel.getPhotoUrl(photo: userPhoto)!)
-                            }
+                            NavigationLink(destination: PhotoDetailView(photo: userPhoto)) {
+                                RemoteImageView(url: viewModel.getPhotoUrl(photo: userPhoto.photo)!)
                                 
-                            
+                            }
                         }
+                        .frame(height: 120)
                     }
-                    .frame(height: 120)
+                    
+                    
+                    Spacer()
+                    
+                    
+                }
+            }
+            .padding()
+            
+            .onAppear {
+                Task {
+                    await viewModel.getMorePhotosFromUser(user: photo.user, currentPhotoId: photo.photo.id)
+                    
+                    print(viewModel.userPhotos.count)
                 }
                 
                 
-                Spacer()
-                
-                
             }
-            .padding()
+            .navigationBarTitleDisplayMode(.inline)
+            .scrollIndicators(.hidden)
         }
-        
-        .onAppear {
-            Task {
-                await viewModel.getMorePhotosFromUser(userId: photo.user.userInfo.nsid)
-                
-                print(viewModel.userPhotos.count)
-            }
-            
-            
-        }
-        .navigationBarTitleDisplayMode(.inline)
-        .scrollIndicators(.hidden)
     }
 }
 
 #Preview {
-    PhotoDetailView(photo: UserPhotoItem(photo: MiniFlickr.Photo(id: "53312315478", owner: "50522809@N05", title: "Turn, Turn, Turn", secret: "5d678b1292", server: "65535", farm: 66, tags: "northyorkshire cityofyork york yorkshire autumn", description: {NestedContentWrapper(_content: "Some lovely trees around yorkshire")}(), license: "0", dateupload: "1699223481", ownername: "Feversham Media", iconserver: "65535"), user: MiniFlickr.User(userInfo: MiniFlickr.UserInfo(id: "50522809@N05", nsid: "50522809@N05", username: MiniFlickr.NestedContentWrapper(_content: "Feversham Media"), iconServer: Optional("65535"), iconFarm: 66), profileInfo: MiniFlickr.ProfileInfo(occupation: Optional(""), description: nil, city: Optional(""), firstName: Optional("Andrew"), lastName: Optional("Gallon")))))
+    PhotoDetailView(photo: UserPhotoItem(photo: MiniFlickr.Photo(id: "53312315478", owner: "50522809@N05", title: "Turn, Turn, Turn", secret: "5d678b1292", server: "65535", farm: 66, tags: "northyorkshire cityofyork york yorkshire autumn", description: {NestedStringContentWrapper(_content: "Some lovely trees around yorkshire")}(), license: "0", dateupload: "1699223481", ownername: "Feversham Media", iconserver: "65535"), user: MiniFlickr.User(userInfo: MiniFlickr.UserInfo(id: "50522809@N05", nsid: "50522809@N05", username: MiniFlickr.NestedStringContentWrapper(_content: "Feversham Media"), iconServer: Optional("65535"), iconFarm: 66), profileInfo: MiniFlickr.ProfileInfo(occupation: Optional(""), description: nil, city: Optional(""), firstName: Optional("Andrew"), lastName: Optional("Gallon")))))
 }
