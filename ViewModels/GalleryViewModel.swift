@@ -1,59 +1,66 @@
 //
-//  GalleryViewController.swift
+//  GalleryViewModel.swift
 //  MiniFlickr
 //
-//  Created by Daniel Priestley on 31/10/2023.
+//  Created by Daniel Priestley on 09/11/2023.
 //
 
 import Foundation
 
 @MainActor
 class GalleryViewModel: ObservableObject {
-    @Published var photos: [Photo] = []
-    @Published var userPhotoItems: [UserPhotoItem] = []
-    @Published var isFetching: Bool = false
-    
     let network = NetworkService.shared
     
-    func loadInitialPhotoItems(query: String) async {
-        Task {
-            do {
-                self.userPhotoItems = try await network.fetchUserPhotoItems(withQuery: query, page: 1)
-            } catch {
-                print("An error occured: \(error)")
-            }
-        }
-    }
+    @Published var galleryPhotos: [UserPhotoItem] = []
+    @Published var isFetching: Bool = false
     
-    func loadAdditionalPhotoItems(query: String) {
-        // enable fetching state
+    func getGalleryPhotos(user: User, galleryId: String) async {
         isFetching = true
         
         Task {
             do {
-                let newUserPhotoItems = try await network.fetchUserPhotoItems(withQuery: query, page: (userPhotoItems.count / 10) + 1)
-                self.userPhotoItems.append(contentsOf: newUserPhotoItems)
-            } catch {
-                print("An error occured while fetching new photos: \(error)")
+                self.galleryPhotos = try await network.fetchGalleryPhotos(user: user, galleryId: galleryId, perPage: 10, page: 1 )
+                print("Loaded initial gallery photos")
             }
+            catch {
+                print("An error occured getting gallery photos: \(error)")
+            }
+            
         }
         
-        // disable fetching state
         isFetching = false
     }
     
+    func loadAdditionalGalleryPhotos(galleryId: String, user: User) {
+        isFetching = true
+        
+        Task {
+            do {
+                let newGalleryPhotos = try await network.fetchGalleryPhotos(user: user, galleryId: galleryId, perPage: 10, page: (galleryPhotos.count / 10) + 1)
+                self.galleryPhotos.append(contentsOf: newGalleryPhotos)
+                print("Loaded additional gallery photos")
+            }
+            catch {
+                print("An error occured getting additional gallery photos: \(error)")
+            }
+        }
+        
+        isFetching = false
+    }
     
     func getPhotoUrl(photo: Photo) -> URL? {
         return network.constructPhotoUrl(photo: photo)
     }
     
     func getTagsFromPhoto(photo: Photo, tagAmount: Int) -> [String] {
-        guard let tagsString = photo.tags else {
+        guard let tagsString = photo.tags?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !tagsString.isEmpty else {
             return []
         }
-        
-        let allTags = tagsString.components(separatedBy: " ")
+
+        let allTags = tagsString.components(separatedBy: " ").filter { !$0.isEmpty }
         let finalTags = Array(allTags.prefix(tagAmount))
         return finalTags
     }
+
 }

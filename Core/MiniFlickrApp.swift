@@ -6,12 +6,21 @@
 //
 
 import SwiftUI
+import TipKit
 
 @main
 struct MiniFlickrApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .task {
+                    // configure tips at app launch
+                    try? Tips.configure([
+                        .displayFrequency(.immediate),
+                        .datastoreLocation(.applicationDefault)
+                    ])
+                }
         }
+        
     }
 }

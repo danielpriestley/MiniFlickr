@@ -7,13 +7,6 @@
 
 import Foundation
 
-struct UserInfoResponse: Codable {
-    let person: UserInfo
-}
-
-struct UserProfileResponse: Codable {
-    let profile: ProfileInfo
-}
 
 struct UserInfo: Codable {
     let id: String
@@ -31,14 +24,6 @@ struct UserInfo: Codable {
         case iconFarm = "iconfarm"
         case photos
     }
-}
-
-struct NestedStringContentWrapper: Codable {
-    let _content: String
-}
-
-struct NestedNumberContentWrapper: Codable {
-    let _content: Int
 }
 
 struct UserPhotos: Codable {
@@ -64,9 +49,7 @@ struct ProfileInfo: Codable {
         case firstName = "first_name"
         case lastName = "last_name"
     }
-    
 }
-
 
 struct User: Codable {
     let userInfo: UserInfo

@@ -8,49 +8,83 @@
 import Foundation
 
 enum TestStubs {
-    static let fetchPhotosResponse = """
+    static let fetchPhotosSuccessResponse =
+        """
         {
             "photos": {
                 "page": 2,
-                "pages": 1522,
-                "perpage": 100,
-                "total": 152171,
+                "pages": 3685,
+                "perpage": 3,
+                "total": 11055,
                 "photo": [
                     {
-                        "id": "53295906315",
-                        "owner": "26695575@N07",
-                        "secret": "7c657a40fe",
+                        "id": "53300058811",
+                        "owner": "23511776@N08",
+                        "secret": "b0885889f5",
                         "server": "65535",
                         "farm": 66,
-                        "title": "The Wall",
+                        "title": "iP14-14369a",
                         "ispublic": 1,
                         "isfriend": 0,
-                        "isfamily": 0
+                        "isfamily": 0,
+                        "license": "0",
+                        "description": {
+                            "_content": ""
+                        },
+                        "dateupload": "1698764453",
+                        "ownername": "Sou'wester",
+                        "iconserver": "3768",
+                        "iconfarm": 4,
+                        "tags": "kelpies artwork installation forthclyde canal scotland falkirk helix park sculpture horses equine grangemouth river carron forth queenelizabethiicanal"
                     },
                     {
-                        "id": "53295679183",
-                        "owner": "26695575@N07",
-                        "secret": "f1093031e4",
+                        "id": "53300058841",
+                        "owner": "23511776@N08",
+                        "secret": "5fde0854b3",
                         "server": "65535",
                         "farm": 66,
-                        "title": "Roots",
+                        "title": "iP14-14374a",
                         "ispublic": 1,
                         "isfriend": 0,
-                        "isfamily": 0
+                        "isfamily": 0,
+                        "license": "0",
+                        "description": {
+                            "_content": ""
+                        },
+                        "dateupload": "1698764452",
+                        "ownername": "Sou'wester",
+                        "iconserver": "3768",
+                        "iconfarm": 4,
+                        "tags": "kelpies artwork installation forthclyde canal scotland falkirk helix park sculpture horses equine grangemouth river carron forth queenelizabethiicanal"
                     },
                     {
-                        "id": "53295433751",
-                        "owner": "26695575@N07",
-                        "secret": "1a7b728415",
+                        "id": "53300058756",
+                        "owner": "23511776@N08",
+                        "secret": "6314660a17",
                         "server": "65535",
                         "farm": 66,
-                        "title": "Thornton Beck",
+                        "title": "iP14-14385a",
                         "ispublic": 1,
                         "isfriend": 0,
-                        "isfamily": 0
-                    },
+                        "isfamily": 0,
+                        "license": "0",
+                        "description": {
+                            "_content": ""
+                        },
+                        "dateupload": "1698764452",
+                        "ownername": "Sou'wester",
+                        "iconserver": "3768",
+                        "iconfarm": 4,
+                        "tags": "kelpies artwork installation forthclyde canal scotland falkirk helix park sculpture horses equine grangemouth river carron forth queenelizabethiicanal"
+                    }
                 ]
-            }
+            },
+            "stat": "ok"
         }
         """
+    
+    static let fetchPhotosByUsernameResponse = 
+    """
+    
+    """
 }

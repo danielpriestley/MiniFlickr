@@ -22,7 +22,12 @@ struct RemoteImageView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 4))
                 
             } else if isLoading {
-                ProgressView()
+                VStack {
+                    ProgressView()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity) // make centered
+                        .padding()
+                }
+                .frame(width: 200, height: 200)
             } else {
                 Color.gray // temp placeholder TODO: Fix this
             }

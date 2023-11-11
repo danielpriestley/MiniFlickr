@@ -7,20 +7,18 @@
 
 import SwiftUI
 
+
 struct PhotoDetailView: View {
     @StateObject private var viewModel = PhotoDetailViewModel()
-    
     var photo: UserPhotoItem
     
     var body: some View {
         ScrollView {
-            VStack {
+            VStack(alignment: .leading) {
                 HStack {
                     NavigationLink(destination: UserView(user: photo.user)) {
-                        AsyncImage(url: photo.userPhotoURL)
+                        UserProfileImageView(url: photo.userPhotoURL)
                             .frame(width: 28, height: 28)
-                            .scaledToFill()
-                            .clipShape(Circle())
                             .padding(.trailing, 4)
                         Text(photo.username)
                             .font(.footnote)
@@ -36,19 +34,22 @@ struct PhotoDetailView: View {
                     
                 }
                 .padding(.bottom, 4)
-                HStack {
-                    Text(photo.photoTitle)
-                        .font(.title3)
-                        .fontWeight(.semibold)
-                    Spacer()
-                }
-                HStack {
+                
+                Text(photo.photoTitle)
+                    .font(.title3)
+                    .fontWeight(.semibold)
+                
+                if isHTML(photo.photo.descriptionContent) {
+                    HTMLTextView(htmlString: photo.photo.descriptionContent, font: UIFont.systemFont(ofSize: 14, weight: .semibold), textColor: .gray)
+                        .frame(height: 80)
+                } else {
                     Text(photo.photo.descriptionContent)
                         .font(.footnote)
                         .fontWeight(.semibold)
                         .foregroundStyle(.gray)
-                    Spacer()
                 }
+                
+                
                 RemoteImageView(url: viewModel.getPhotoUrl(photo: photo.photo)!)
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack {
@@ -114,6 +115,6 @@ struct PhotoDetailView: View {
     }
 }
 
-#Preview {
-    PhotoDetailView(photo: UserPhotoItem(photo: MiniFlickr.Photo(id: "53312315478", owner: "50522809@N05", title: "Turn, Turn, Turn", secret: "5d678b1292", server: "65535", farm: 66, tags: "northyorkshire cityofyork york yorkshire autumn", description: {NestedStringContentWrapper(_content: "Some lovely trees around yorkshire")}(), license: "0", dateupload: "1699223481", ownername: "Feversham Media", iconserver: "65535"), user: MiniFlickr.User(userInfo: MiniFlickr.UserInfo(id: "50522809@N05", nsid: "50522809@N05", username: MiniFlickr.NestedStringContentWrapper(_content: "Feversham Media"), iconServer: Optional("65535"), iconFarm: 66), profileInfo: MiniFlickr.ProfileInfo(occupation: Optional(""), description: nil, city: Optional(""), firstName: Optional("Andrew"), lastName: Optional("Gallon")))))
-}
+//#Preview {
+//    PhotoDetailView(photo: UserPhotoItem(photo: MiniFlickr.Photo(id: "53312315478", owner: "50522809@N05", title: "Turn, Turn, Turn", secret: "5d678b1292", server: "65535", farm: 66, tags: "northyorkshire cityofyork york yorkshire autumn", description: {NestedStringContentWrapper(_content: "Some lovely trees around yorkshire")}(), license: "0", dateupload: "1699223481", ownername: "Feversham Media", iconserver: "65535"), user: MiniFlickr.User(userInfo: MiniFlickr.UserInfo(id: "50522809@N05", nsid: "50522809@N05", username: MiniFlickr.NestedStringContentWrapper(_content: "Feversham Media"), iconServer: Optional("65535"), iconFarm: 66), profileInfo: MiniFlickr.ProfileInfo(occupation: Optional(""), description: nil, city: Optional(""), firstName: Optional("Andrew"), lastName: Optional("Gallon")))))
+//}

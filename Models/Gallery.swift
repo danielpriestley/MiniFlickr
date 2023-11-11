@@ -34,10 +34,4 @@ struct Gallery: Identifiable, Decodable {
     }
 }
 
-struct GalleryResponse: Decodable {
-    let galleries: GalleryContainer
-}
 
-struct GalleryContainer: Decodable {
-    let gallery: [Gallery]
-}
