@@ -115,6 +115,3 @@ struct PhotoDetailView: View {
     }
 }
 
-//#Preview {
-//    PhotoDetailView(photo: UserPhotoItem(photo: MiniFlickr.Photo(id: "53312315478", owner: "50522809@N05", title: "Turn, Turn, Turn", secret: "5d678b1292", server: "65535", farm: 66, tags: "northyorkshire cityofyork york yorkshire autumn", description: {NestedStringContentWrapper(_content: "Some lovely trees around yorkshire")}(), license: "0", dateupload: "1699223481", ownername: "Feversham Media", iconserver: "65535"), user: MiniFlickr.User(userInfo: MiniFlickr.UserInfo(id: "50522809@N05", nsid: "50522809@N05", username: MiniFlickr.NestedStringContentWrapper(_content: "Feversham Media"), iconServer: Optional("65535"), iconFarm: 66), profileInfo: MiniFlickr.ProfileInfo(occupation: Optional(""), description: nil, city: Optional(""), firstName: Optional("Andrew"), lastName: Optional("Gallon")))))
-//}

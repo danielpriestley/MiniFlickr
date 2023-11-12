@@ -9,6 +9,8 @@ import Foundation
 
 class MockURLSession: URLSessionProtocol {
     var mockedData: Data?
+    var mockedDataForUserInfo: Data?
+    var mockedDataForProfileInfo: Data?
     var mockedError: Error?
     var mockedResponse: URLResponse?
     
@@ -32,12 +34,23 @@ class MockURLSession: URLSessionProtocol {
             throw error
         }
         
-        // throw error if mockedData is not passed
-        guard let data = mockedData else {
-            throw NSError(domain: "No data", code: 0, userInfo: [NSLocalizedDescriptionKey: "No mocked data provided"])
+        let data: Data?
+        
+        switch url.absoluteString {
+        case let urlString where urlString.contains("flickr.people.getInfo"):
+            data = mockedDataForUserInfo
+        case let urlString where urlString.contains("flickr.profile.getProfile"):
+            data = mockedDataForProfileInfo
+        default:
+            data = mockedData
         }
         
-        return (data, HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+        guard let responseData = data else {
+            throw NSError(domain: "No data", code: 0, userInfo: [NSLocalizedDescriptionKey: "No mocked data provided for URL \(url.absoluteString)"])
+        }
+        
+        return (responseData, HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil)!)
     }
+    
 }
 

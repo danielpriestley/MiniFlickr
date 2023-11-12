@@ -25,7 +25,7 @@ struct PhotoInfoResponse: Codable {
 
 struct PhotoUserNsidResponse: Decodable {
     struct User: Decodable {
-        let nsid: String
+        let nsid: String?
     }
     
     let user: User
@@ -62,4 +62,20 @@ struct NestedStringContentWrapper: Codable {
 
 struct NestedNumberContentWrapper: Codable {
     let _content: Int
+}
+
+// MARK: Flickr response for getting an nsid from username
+struct FlickrApiResponse<T: Codable>: Codable {
+    let stat: String
+    let code: Int?
+    let message: String?
+    let user: T?
+    
+    enum CodingKeys: String, CodingKey {
+        case stat, code, message, user
+    }
+}
+
+struct FlickrUser: Codable {
+    let nsid: String?
 }

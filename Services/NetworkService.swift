@@ -12,6 +12,8 @@ enum NetworkError: Error {
     case generalError
     case failedToFetchProfileInfo
     case failedToFetchUserInfo
+    case failedToFetchGalleriesForUser
+    case failedToFetchPhotosFromGallery
 }
 
 class NetworkService {
@@ -28,34 +30,15 @@ class NetworkService {
     func fetchPhotos(withQuery query: String, page: Int) async throws -> [Photo] {
         let decoder = JSONDecoder()
         var urlString: String
-        var nsid: String?
         
-        // check if query starts with @
         if query.starts(with: "@") {
             let username = String(query.dropFirst())
+            let nsid = try await fetchNsid(forUsername: username)
             
-            // remove comma from username if present
-            let cleanedUsername = username.replacingOccurrences(of: ",", with: "")
-            
-            // fetch the nsid for the username
-            let nsidUrlString = "https://www.flickr.com/services/rest/?method=flickr.people.findByUsername&api_key=\(Secrets.apiKey)&username=\(cleanedUsername)&format=json&nojsoncallback=1"
-            
-            if let nsidUrl = URL(string: nsidUrlString) {
-                let (data, _) = try await session.data(from: nsidUrl)
-                // Decode nsid from data
-                // Assuming you have a proper decoding structure for this response
-                let userResponse = try decoder.decode(PhotoUserNsidResponse.self, from: data)
-                nsid = userResponse.user.nsid
-            } else {
-                throw URLError(.badURL)
-            }
-        }
-        
-        if let nsid = nsid {
-            // if the query contains no commas nor @, search the default way (any tag that matches)
+            // if the query contains @, search via the user nsid
             urlString = "https://www.flickr.com/services/rest/?method=flickr.photos.search&api_key=\(Secrets.apiKey)&user_id=\(nsid)&extras=tags,date_upload,license,description,owner_name,icon_server&format=json&nojsoncallback=1&safe_search=1&page=\(page)&per_page=10"
         } else if query.contains(",") {
-            // if the query contains commas, set the tag_mode to all for all tags to match
+            // if the query contains commas, set the tag_mode to all, meaning photos must include all given tags
             urlString = "https://www.flickr.com/services/rest/?method=flickr.photos.search&api_key=\(Secrets.apiKey)&tags=\(query)&tag_mode=all&extras=tags,date_upload,license,description,owner_name,icon_server&format=json&nojsoncallback=1&safe_search=1&page=\(page)&per_page=10"
         } else {
             // if the query does not contain @ or commas, proceed with a single tag search
@@ -78,6 +61,40 @@ class NetworkService {
             print("Failed to decode JSON with error: \(error)")
             throw error
         }
+    }
+    
+    func fetchNsid(forUsername username: String) async throws -> String {
+        let decoder = JSONDecoder()
+        
+        // clean username to remove commas
+        let cleanedUsername = username.replacingOccurrences(of: ",", with: "")
+        
+        // establish url
+        let nsidUrlString = "https://www.flickr.com/services/rest/?method=flickr.people.findByUsername&api_key=\(Secrets.apiKey)&username=\(cleanedUsername)&format=json&nojsoncallback=1"
+        
+        // ensure url is valid
+        guard let nsidUrl = URL(string: nsidUrlString) else {
+            throw URLError(.badURL)
+        }
+        
+        // get the data from the endpoint
+        let (data, _) = try await session.data(from: nsidUrl)
+        
+        // decode the response
+        let apiResponse = try decoder.decode(FlickrApiResponse<FlickrUser>.self, from: data)
+        
+        // throw userNotFound error if no user found for that username
+        if let nsid = apiResponse.user?.nsid {
+            print(nsid)
+            return nsid
+        } else if apiResponse.stat == "fail" {
+            // Handle failure according to the "code" and "message" from the response
+            throw NetworkError.userNotFound
+        } else {
+            // If response does not contain an nsid and is not a failure, throw a generic error
+            throw NetworkError.generalError
+        }
+        
     }
     
     @MainActor
@@ -200,7 +217,7 @@ class NetworkService {
         guard let url = URL(string:
                                 "https://www.flickr.com/services/rest/?api_key=\(Secrets.apiKey)&format=json&nojsoncallback=1&user_id=\(userId)&page=\(page)&per_page=10&method=flickr.galleries.getList")
         else {
-            fatalError("Invalid URL")
+            throw NetworkError.failedToFetchGalleriesForUser
         }
         
         let (data, _) = try await session.data(from: url)
@@ -246,14 +263,13 @@ class NetworkService {
         // map photos to the UserPhotoItem
         return photos.compactMap { photo in
             if let userProfile = userProfiles[photo.owner] {
+                print(UserPhotoItem(photo: photo, user: userProfile))
                 return UserPhotoItem(photo: photo, user: userProfile)
             } else {
                 print("user profile not found for \(photo.owner)")
                 return nil
             }
         }
-        
-        
     }
     
     
@@ -280,7 +296,7 @@ class NetworkService {
             }
         } catch {
             print("Failed to decode JSON with error: \(error)")
-            throw error
+            throw NetworkError.failedToFetchPhotosFromGallery
         }
         
     }

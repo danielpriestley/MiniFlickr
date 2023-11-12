@@ -155,6 +155,7 @@ struct FeedView: View {
         .onSubmit(of: .search, {
             viewModel.userPhotoItems = []
             isLoadingContent = true
+            
             Task {
                 await viewModel.loadInitialPhotoItems(query: searchQuery)
                 isLoadingContent = false
