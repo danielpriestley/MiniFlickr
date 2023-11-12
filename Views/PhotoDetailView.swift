@@ -7,20 +7,19 @@
 
 import SwiftUI
 
-
 struct PhotoDetailView: View {
     @StateObject private var viewModel = PhotoDetailViewModel()
-    var photo: UserPhotoItem
+    var photo: Photo
     
     var body: some View {
         ScrollView {
             VStack(alignment: .leading) {
                 HStack {
-                    NavigationLink(destination: UserView(user: photo.user)) {
-                        UserProfileImageView(url: photo.userPhotoURL)
+                    NavigationLink(destination: UserView(userId: photo.owner, profileImageUrl: photo.profileImageUrl)) {
+                        UserProfileImageView(url: photo.profileImageUrl)
                             .frame(width: 28, height: 28)
                             .padding(.trailing, 4)
-                        Text(photo.username)
+                        Text(photo.ownername)
                             .font(.footnote)
                             .bold()
                     }
@@ -35,25 +34,26 @@ struct PhotoDetailView: View {
                 }
                 .padding(.bottom, 4)
                 
-                Text(photo.photoTitle)
+                Text(photo.title)
                     .font(.title3)
                     .fontWeight(.semibold)
                 
-                if isHTML(photo.photo.descriptionContent) {
-                    HTMLTextView(htmlString: photo.photo.descriptionContent, font: UIFont.systemFont(ofSize: 14, weight: .semibold), textColor: .gray)
+                if isHTML(photo.descriptionContent) {
+                    HTMLTextView(htmlString: photo.descriptionContent, font: UIFont.systemFont(ofSize: 14, weight: .semibold), textColor: .gray)
                         .frame(height: 80)
                 } else {
-                    Text(photo.photo.descriptionContent)
+                    Text(photo.descriptionContent)
                         .font(.footnote)
                         .fontWeight(.semibold)
                         .foregroundStyle(.gray)
                 }
                 
                 
-                RemoteImageView(url: viewModel.getPhotoUrl(photo: photo.photo)!)
+                RemoteImageView(url: viewModel.getPhotoUrl(photo: photo)!)
+                
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack {
-                        ForEach(viewModel.getTagsFromPhoto(photo: photo.photo, tagAmount: 16), id: \.self) { tag in
+                        ForEach(viewModel.getTagsFromPhoto(photo: photo, tagAmount: 16), id: \.self) { tag in
                             Text(tag)
                                 .font(.caption)
                                 .padding(4)
@@ -70,8 +70,8 @@ struct PhotoDetailView: View {
                         .fontWeight(.semibold)
                         .foregroundStyle(.gray)
                         .padding(.trailing, -4)
-                    NavigationLink(destination: UserView(user: photo.user)) {
-                        Text(photo.username)
+                    NavigationLink(destination: UserView(userId: photo.owner, profileImageUrl: photo.profileImageUrl)) {
+                        Text(photo.ownername)
                             .font(.subheadline)
                             .fontWeight(.semibold)
                     }
@@ -85,7 +85,7 @@ struct PhotoDetailView: View {
                     HStack {
                         ForEach(viewModel.userPhotos, id: \.id) { userPhoto in
                             NavigationLink(destination: PhotoDetailView(photo: userPhoto)) {
-                                RemoteImageView(url: viewModel.getPhotoUrl(photo: userPhoto.photo)!)
+                                RemoteImageView(url: viewModel.getPhotoUrl(photo: userPhoto)!)
                                 
                             }
                         }
@@ -102,12 +102,8 @@ struct PhotoDetailView: View {
             
             .onAppear {
                 Task {
-                    await viewModel.getMorePhotosFromUser(user: photo.user, currentPhotoId: photo.photo.id)
-                    
-                    print(viewModel.userPhotos.count)
+                    await viewModel.getMorePhotosFromUser(userId: photo.owner, currentPhotoId: photo.id)
                 }
-                
-                
             }
             .navigationBarTitleDisplayMode(.inline)
             .scrollIndicators(.hidden)

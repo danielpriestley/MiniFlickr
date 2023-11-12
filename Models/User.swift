@@ -55,14 +55,5 @@ struct User: Codable {
     let userInfo: UserInfo
     let profileInfo: ProfileInfo
     
-    // https://www.flickr.com/services/api/misc.buddyicons.html
-    var buddyIconURL: URL {
-        // if the icon server exists, they should have a profile image
-        if let iconServerInt = Int(userInfo.iconServer ?? "0"), iconServerInt > 0 {
-            return URL(string: "https://farm\(userInfo.iconFarm).staticflickr.com/\(iconServerInt)/buddyicons/\(userInfo.nsid).jpg")!
-        } else {
-            // if the icon server doesn't exist (it has a value of 0), return the default icon
-            return URL(string: "https://www.flickr.com/images/buddyicon.gif")!
-        }
-    }
+   
 }

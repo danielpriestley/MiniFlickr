@@ -12,29 +12,42 @@ class UserViewModel: ObservableObject {
     let network = NetworkService.shared
     
     @Published var isFetching: Bool = false
-    @Published var userPhotoItems: [UserPhotoItem] = []
+    @Published var photos: [Photo] = []
     @Published var userGalleries: [Gallery] = []
     @Published var allGalleriesLoaded = false
+    @Published var user: User?
     
     private var hasFetchedData = false
     
-    func fetchDataIfNeeded(user: User, page: Int) async {
+    func fetchDataIfNeeded(userId: String, page: Int) async {
         guard !hasFetchedData else { return }
         
         hasFetchedData = true
         
-        await getUserPhotos(user: user)
-        await getUserGalleries(userId: user.userInfo.nsid, page: page)
+        await getUser(userId: userId)
+        await getUserGalleries(userId: userId, page: page)
+        await getUserPhotos(userId: userId)
+        
     }
     
-    func loadAdditionalUserPhotoItems(user: User) {
+    func getUser(userId: String) async {
+        Task {
+            do {
+                self.user = try await network.fetchCompleteUserInfo(forUserId: userId)
+            } catch {
+                throw NetworkError.failedToFetchUserInfo
+            }
+        }
+    }
+    
+    func loadAdditionalPhotos(userId: String) {
         // enable fetching state
         isFetching = true
         
         Task {
             do {
-                let newUserPhotoItems = try await network.fetchPhotosForUser(user: user, perPage: 10, page: (userPhotoItems.count / 10) + 1)
-                self.userPhotoItems.append(contentsOf: newUserPhotoItems)
+                let newPhotos = try await network.fetchPhotosForUser(userId: userId, perPage: 10, page: (photos.count / 10) + 1)
+                self.photos.append(contentsOf: newPhotos)
             } catch {
                 print("An error occured while fetching new photos: \(error)")
             }
@@ -51,13 +64,12 @@ class UserViewModel: ObservableObject {
     }
     
     
-    func getUserPhotos(user: User) async {
+    func getUserPhotos(userId: String) async {
         isFetching = true
         
         Task {
             do {
-                self.userPhotoItems = try await network.fetchPhotosForUser(user: user, perPage: 10, page: 1)
-                print("updated user photos")
+                self.photos = try await network.fetchPhotosForUser(userId: userId, perPage: 10, page: 1)
             }
             catch {
                 print("An error occured: \(error)")

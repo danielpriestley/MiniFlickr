@@ -14,6 +14,9 @@ enum NetworkError: Error {
     case failedToFetchUserInfo
     case failedToFetchGalleriesForUser
     case failedToFetchPhotosFromGallery
+    case failedToFetchPhotosForUser
+    case failedToFetchPhotos
+    case urlIssue
 }
 
 class NetworkService {
@@ -59,7 +62,7 @@ class NetworkService {
             return photosResponse.photos.photo
         } catch {
             print("Failed to decode JSON with error: \(error)")
-            throw error
+            throw NetworkError.failedToFetchPhotos
         }
     }
     
@@ -85,7 +88,6 @@ class NetworkService {
         
         // throw userNotFound error if no user found for that username
         if let nsid = apiResponse.user?.nsid {
-            print(nsid)
             return nsid
         } else if apiResponse.stat == "fail" {
             // Handle failure according to the "code" and "message" from the response
@@ -98,37 +100,32 @@ class NetworkService {
     }
     
     @MainActor
-    func fetchPhotosForUser(user: User, currentPhotoId: String? = nil, perPage: Int, page: Int) async throws -> [UserPhotoItem] {
+    func fetchPhotosForUser(userId: String, currentPhotoId: String? = nil, perPage: Int, page: Int) async throws -> [Photo] {
         let decoder = JSONDecoder()
         
         // ensure url is valid
-        guard let url = URL(string: "https://www.flickr.com/services/rest/?method=flickr.people.getPublicPhotos&api_key=\(Secrets.apiKey)&format=json&nojsoncallback=1&safe_search=1&extras=tags,date_upload,license,description, owner_name,icon_server&user_id=\(user.userInfo.id)&per_page=\(perPage)&page=\(page)") else {
-            fatalError("Invalid URL")
+        guard let url = URL(string: "https://www.flickr.com/services/rest/?method=flickr.people.getPublicPhotos&api_key=\(Secrets.apiKey)&format=json&nojsoncallback=1&safe_search=1&extras=tags,date_upload,license,description, owner_name,icon_server&user_id=\(userId)&per_page=\(perPage)&page=\(page)") 
+        else {
+            throw NetworkError.urlIssue
         }
         
         // fetch response from flickr
         let (data, _) = try await session.data(from: url)
-        print("fetching data from \(url)")
         
         // attempt to decode the response to be a valid Photo type
         do {
             let photosResponse = try decoder.decode(PhotosResponse.self, from: data)
             
-            // filter to avoid showing the same image already within the PhotoDetailView
+            // filter and shuffle to avoid showing the same image already within the PhotoDetailView
             let filteredPhotos = photosResponse.photos.photo.filter { $0.id != currentPhotoId }
+            let shuffledPhotos = filteredPhotos.shuffled()
+            let firstFivePhotos = Array(shuffledPhotos.prefix(5))
             
-            // map photos to the UserPhotoItem
-            return filteredPhotos.compactMap { photo in
-                if user.userInfo.id == photo.owner {
-                    return UserPhotoItem(photo: photo, user: user)
-                } else {
-                    print("user profile not found for \(photo.owner)")
-                    return nil
-                }
-            }
+            return firstFivePhotos
+            
         } catch {
             print("Failed to decode JSON with error: \(error)")
-            throw error
+            throw NetworkError.failedToFetchPhotosForUser
         }
     }
     
@@ -145,7 +142,6 @@ class NetworkService {
     
     
     // MARK: Users
-    
     @MainActor
     func fetchUserInfo(forUserId userId: String) async throws -> UserInfo {
         let decoder = JSONDecoder()
@@ -153,7 +149,7 @@ class NetworkService {
         // ensure url is valid
         guard let url = URL(string: "https://www.flickr.com/services/rest/?api_key=\(Secrets.apiKey)&format=json&nojsoncallback=1&user_id=\(userId)&method=flickr.people.getInfo")
         else {
-            fatalError("Invalid URL")
+            throw NetworkError.urlIssue
         }
         
         let (data, _) = try await session.data(from: url)
@@ -168,10 +164,9 @@ class NetworkService {
         let decoder = JSONDecoder()
         
         // ensure url is valid
-        guard let url = URL(string:
-                                "https://www.flickr.com/services/rest/?api_key=\(Secrets.apiKey)&format=json&nojsoncallback=1&user_id=\(userId)&method=flickr.profile.getProfile")
+        guard let url = URL(string: "https://www.flickr.com/services/rest/?api_key=\(Secrets.apiKey)&format=json&nojsoncallback=1&user_id=\(userId)&method=flickr.profile.getProfile")
         else {
-            fatalError("Invalid URL")
+            throw NetworkError.urlIssue
         }
         
         let (data, _) = try await session.data(from: url)
@@ -214,74 +209,30 @@ class NetworkService {
     func fetchUserGalleries(userId: String, page: Int) async throws -> [Gallery] {
         let decoder = JSONDecoder()
         
-        guard let url = URL(string:
-                                "https://www.flickr.com/services/rest/?api_key=\(Secrets.apiKey)&format=json&nojsoncallback=1&user_id=\(userId)&page=\(page)&per_page=10&method=flickr.galleries.getList")
+        guard let url = URL(string: "https://www.flickr.com/services/rest/?api_key=\(Secrets.apiKey)&format=json&nojsoncallback=1&user_id=\(userId)&page=\(page)&per_page=10&method=flickr.galleries.getList")
         else {
-            throw NetworkError.failedToFetchGalleriesForUser
+            throw NetworkError.urlIssue
         }
         
         let (data, _) = try await session.data(from: url)
         
-        
-        let galleryResponse = try decoder.decode(GalleryResponse.self, from: data)
-        print(galleryResponse)
-        return galleryResponse.galleries.gallery
-    }
-    
-    // MARK: UserPhotoItems
-    @MainActor
-    func fetchUserPhotoItems(withQuery query: String, page: Int) async throws -> [UserPhotoItem] {
-        let photos = try await fetchPhotos(withQuery: query, page: page)
-        
-        var userProfiles: [String: User] = [:]
-        
-        // map out unique user ids
-        let uniqueUserIds = Set(photos.map{$0.owner})
-        
-        // fetch the user profiles in parallel to fetching the photos
-        await withTaskGroup(of: (String, User?)?.self) { group in
-            
-            for userId in uniqueUserIds {
-                group.addTask { [weak self] in
-                    do {
-                        let user = try await self?.fetchCompleteUserInfo(forUserId: userId)
-                        return (userId, user)
-                    } catch {
-                        print("Error fetching user info for \(userId): \(error)")
-                        return nil
-                    }
-                }
-            }
-            
-            for await result in group {
-                if let (userId, user) = result {
-                    userProfiles[userId] = user
-                }
-            }
-        }
-        
-        // map photos to the UserPhotoItem
-        return photos.compactMap { photo in
-            if let userProfile = userProfiles[photo.owner] {
-                print(UserPhotoItem(photo: photo, user: userProfile))
-                return UserPhotoItem(photo: photo, user: userProfile)
-            } else {
-                print("user profile not found for \(photo.owner)")
-                return nil
-            }
+        do {
+            let galleryResponse = try decoder.decode(GalleryResponse.self, from: data)
+            return galleryResponse.galleries.gallery
+        } catch {
+            throw NetworkError.failedToFetchGalleriesForUser
         }
     }
-    
-    
     
     
     // MARK: Galleries
     @MainActor
-    func fetchGalleryPhotos(user: User, galleryId: String, perPage: Int, page: Int) async throws -> [UserPhotoItem] {
+    func fetchGalleryPhotos(userId: String, galleryId: String, perPage: Int, page: Int) async throws -> [Photo] {
         let decoder = JSONDecoder()
         
-        guard let url = URL(string: "https://www.flickr.com/services/rest/?method=flickr.galleries.getPhotos&gallery_id=\(galleryId)&api_key=\(Secrets.apiKey)&format=json&nojsoncallback=1&safe_search=1&extras=tags,date_upload,license,description, owner_name,icon_server&user_id=\(user.userInfo.id)&per_page=\(perPage)&page=\(page)") else {
-            fatalError("Invalid URL")
+        guard let url = URL(string: "https://www.flickr.com/services/rest/?method=flickr.galleries.getPhotos&gallery_id=\(galleryId)&api_key=\(Secrets.apiKey)&format=json&nojsoncallback=1&safe_search=1&extras=tags,date_upload,license,description, owner_name,icon_server&user_id=\(userId)&per_page=\(perPage)&page=\(page)") 
+        else {
+            throw NetworkError.urlIssue
         }
         
         let (data, _) = try await session.data(from: url)
@@ -289,11 +240,7 @@ class NetworkService {
         do {
             let photosResponse = try decoder.decode(PhotosResponse.self, from: data)
             
-            // map photos to the UserPhotoItem attaching the user param
-            return photosResponse.photos.photo.map { photo in
-                    print("mapped userPhotoItems")
-                    return UserPhotoItem(photo: photo, user: user)
-            }
+            return photosResponse.photos.photo
         } catch {
             print("Failed to decode JSON with error: \(error)")
             throw NetworkError.failedToFetchPhotosFromGallery

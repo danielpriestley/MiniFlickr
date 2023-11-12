@@ -19,10 +19,6 @@ struct PhotosResponse: Codable {
     let photos: PhotosContainer
 }
 
-struct PhotoInfoResponse: Codable {
-    let photo: PhotoInfo
-}
-
 struct PhotoUserNsidResponse: Decodable {
     struct User: Decodable {
         let nsid: String?

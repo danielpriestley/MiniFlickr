@@ -27,27 +27,24 @@ final class NetworkServiceTests: XCTestCase {
     
     // MARK: Fetching photos by query
     func testFetchPhotosSuccess() async throws {
-        // define the mock session
-        
-        
-        // set the mocked data to the stub (based on flickr response format)
+        // given
         mockSession.mockedData = TestStubs.fetchPhotosSuccessResponse.data(using: .utf8)
         
+        
         do {
+            // when
             let photos = try await networkService.fetchPhotos(withQuery: "grangemouth", page: 2)
             
-            // test response structure
+            // then
             XCTAssertNotNil(photos, "Expected photos to not be nil")
             XCTAssert(photos.count > 0, "Expected at least one photo in the response")
             
-            // check first photo structure
             if let firstPhoto = photos.first {
                 XCTAssertNotNil(firstPhoto.id, "Expected first photo to have a non-nil id")
                 XCTAssertNotNil(firstPhoto.owner, "Expected first photo to have a non-nil owner")
                 XCTAssertNotNil(firstPhoto.title, "Expected first photo to have a non-nil title")
             }
             
-            // test non-empty values
             for photo in photos {
                 XCTAssertFalse(photo.id.isEmpty, "Expected photo id to be non-empty")
                 XCTAssertFalse(photo.owner.isEmpty, "Expected photo owner to be non-empty")
@@ -58,15 +55,17 @@ final class NetworkServiceTests: XCTestCase {
     }
     
     func testFetchPhotosNetworkError() async throws {
+        // given
         mockSession.mockedData = Data()
         
-        // simulate network error
+        // when
         let networkError = URLError(.notConnectedToInternet)
         mockSession.mockedError = networkError
         
         
         
         do {
+            // then
             _ = try await networkService.fetchPhotos(withQuery: "grangemouth", page: 2)
             XCTFail("Expected network error to be thrown")
         } catch {
@@ -80,12 +79,14 @@ final class NetworkServiceTests: XCTestCase {
     }
     
     func testFetchNsidForUsername() async throws {
+        // given
         mockSession.mockedData = TestStubs.nsidLookupResponse.data(using: .utf8)!
         
         do {
+            // when
             let nsidResponse = try await networkService.fetchNsid(forUsername: "flickr")
             
-            // test response structure
+            // then
             XCTAssertNotNil(nsidResponse, "Expected nsid response to not be nil")
             XCTAssertTrue(!nsidResponse.isEmpty, "Expected a non empty string")
             
@@ -95,16 +96,18 @@ final class NetworkServiceTests: XCTestCase {
     }
     
     func testFetchNsidForUsernameError() async throws {
+        // given
         mockSession.mockedData = Data()
-        
-        // simulate api error
         mockSession.mockedError = NetworkError.userNotFound
         
         do {
+            // when
             _ = try await networkService.fetchNsid(forUsername: "daniel")
             XCTFail("Expected userNotFound error")
         } catch {
+            
             if let networkError = error as? NetworkError {
+                // then
                 XCTAssertEqual(networkError, .userNotFound, "Expected user not found error")
             } else {
                 XCTFail("Expected userNotFound error but recieved a different kind of error")
@@ -210,17 +213,7 @@ final class NetworkServiceTests: XCTestCase {
     
     func testFetchPhotosForUserSuccess() async throws {
         // given
-        let user = User(userInfo:
-                            UserInfo(
-                                id: "66956608@N06",
-                                nsid: "66956608@N06",
-                                username:
-                                    NestedStringContentWrapper(
-                                        _content: "Flickr"),
-                                iconServer: "3741",
-                                iconFarm: 4),
-                        profileInfo: ProfileInfo())
-        
+        let userId = "66956608@N06"
         let currentPhotoId = "53322715959"
         let perPage = 10
         let page = 1
@@ -229,12 +222,12 @@ final class NetworkServiceTests: XCTestCase {
         
         do {
             // then
-            let userPhotoItems = try await networkService.fetchPhotosForUser(user: user, currentPhotoId: currentPhotoId, perPage: perPage, page: page)
+            let userPhotos = try await networkService.fetchPhotosForUser(userId: userId, currentPhotoId: currentPhotoId, perPage: perPage, page: page)
             
             // when
-            XCTAssertNotNil(userPhotoItems, "Expected userPhotoItems to not be nil")
-            XCTAssertTrue(!userPhotoItems.isEmpty, "Expected at least one UserPhotoItem in the response")
-            XCTAssertNil(userPhotoItems.first(where: { $0.photo.id == currentPhotoId }), "Expected the current photo ID to be excluded from the response")
+            XCTAssertNotNil(userPhotos, "Expected user photos to not be nil")
+            XCTAssertTrue(!userPhotos.isEmpty, "Expected at least one photo in the response")
+            XCTAssertNil(userPhotos.first(where: { $0.id == currentPhotoId }), "Expected the current photo ID to be excluded from the response")
             
         } catch {
             XCTFail("Expected successful fetching of photos for user but received error: \(error)")
@@ -255,7 +248,7 @@ final class NetworkServiceTests: XCTestCase {
     }
     
     func testConstructGalleryThumbnailUrl() {
-        // Given
+        // given
         let gallery = Gallery(
             id: "63055753-72157720083775277",
             galleryId: "72157720083775277",
@@ -270,10 +263,10 @@ final class NetworkServiceTests: XCTestCase {
         )
         
         
-        // When
+        // when
         let thumbnailUrl = networkService.constructGalleryThumbnailUrl(gallery: gallery)
         
-        // Then
+        // then
         XCTAssertNotNil(thumbnailUrl, "Expected constructed URL to not be nil")
         XCTAssertEqual(thumbnailUrl?.absoluteString, "https://live.staticflickr.com/65535/50607475588_2304f903ea.jpg", "Expected URL to be constructed correctly")
     }
@@ -372,21 +365,13 @@ final class NetworkServiceTests: XCTestCase {
     func testFetchGalleryPhotosSuccess() async throws {
         // given
         let galleryId = "72157622763060009"
-        let user = User(userInfo:
-                            UserInfo(
-                                id: "8070463@N03",
-                                nsid: "8070463@N03",
-                                username:
-                                    NestedStringContentWrapper(
-                                        _content: "Tambako the Jaguar"),
-                                iconServer: "7457",
-                                iconFarm: 8),
-                        profileInfo: ProfileInfo())
+        let userId = "8070463@N03"
+        
         mockSession.mockedData = TestStubs.fetchGalleryPhotosSuccessResponse.data(using: .utf8)
         
         do {
             // when
-            let galleryPhotos = try await networkService.fetchGalleryPhotos(user: user, galleryId: galleryId, perPage: 10, page: 1)
+            let galleryPhotos = try await networkService.fetchGalleryPhotos(userId: userId, galleryId: galleryId, perPage: 10, page: 1)
             
             // then
             XCTAssertNotNil(galleryPhotos, "Expected gallery photos to not be nil")
@@ -400,22 +385,13 @@ final class NetworkServiceTests: XCTestCase {
     func testFetchGalleryPhotosNetworkError() async throws {
         // given
         let galleryId = "72157622763060009"
-        let user = User(userInfo:
-                            UserInfo(
-                                id: "8070463@N03",
-                                nsid: "8070463@N03",
-                                username:
-                                    NestedStringContentWrapper(
-                                        _content: "Tambako the Jaguar"),
-                                iconServer: "7457",
-                                iconFarm: 8),
-                        profileInfo: ProfileInfo())
+        let userId = "8070463@N03"
         
         mockSession.mockedError = NetworkError.failedToFetchPhotosFromGallery
         
         do {
             // When
-            _ = try await networkService.fetchGalleryPhotos(user: user, galleryId: galleryId, perPage: 3, page: 1)
+            _ = try await networkService.fetchGalleryPhotos(userId: userId, galleryId: galleryId, perPage: 3, page: 1)
             XCTFail("Expected failed to fetch galleries for user error to be thrown")
         } catch let error as NetworkError {
             // Then

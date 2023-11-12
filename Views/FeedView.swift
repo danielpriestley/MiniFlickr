@@ -16,7 +16,7 @@ struct FeedView: View {
     @State private var searchQuery = ""
     @State private var initialSearchPerformed = false
     @State private var isShowingBackToTopButton = false
-    @State private var visibleItems: Set<UUID> = []
+    @State private var visibleItems: Set<String> = []
     
     var searchBarTip = SearchBarTip()
     
@@ -32,14 +32,14 @@ struct FeedView: View {
                         if isLoadingContent {
                             ProgressView()
                         } else {
-                            ForEach(viewModel.userPhotoItems, id: \.id) { item in
+                            ForEach(viewModel.photos, id: \.id) { item in
                                 VStack {
-                                    NavigationLink(destination: UserView(user: item.user)) {
+                                    NavigationLink(destination: UserView(userId: item.owner, profileImageUrl: item.profileImageUrl)) {
                                         HStack {
-                                            UserProfileImageView(url: item.userPhotoURL)
+                                            UserProfileImageView(url: URL(string: "https://farm\(item.farm).staticflickr.com/\(item.iconserver)/buddyicons/\(item.owner).jpg"))
                                                 .frame(width: 28, height: 28)
                                                 .padding(.trailing, 4)
-                                            Text(item.username)
+                                            Text(item.ownername)
                                                 .font(.footnote)
                                                 .bold()
                                             Spacer()
@@ -49,12 +49,12 @@ struct FeedView: View {
                                     .buttonStyle(PlainButtonStyle())
                                     
                                     NavigationLink(destination: PhotoDetailView(photo: item)){
-                                        RemoteImageView(url: viewModel.getPhotoUrl(photo: item.photo)!)
+                                        RemoteImageView(url: viewModel.getPhotoUrl(photo: item)!)
                                     }
                                     
                                     ScrollView(.horizontal, showsIndicators: false) {
                                         HStack {
-                                            ForEach(viewModel.getTagsFromPhoto(photo: item.photo, tagAmount: 16), id: \.self) { tag in
+                                            ForEach(viewModel.getTagsFromPhoto(photo: item, tagAmount: 16), id: \.self) { tag in
                                                 Text(tag)
                                                     .font(.caption)
                                                     .padding(4)
@@ -72,7 +72,7 @@ struct FeedView: View {
                                         visibleItems.insert(item.id) // Mark as visible with animation
                                     }
                                     
-                                    if let index = self.viewModel.userPhotoItems.firstIndex(where: {$0.id == item.id}) {
+                                    if let index = self.viewModel.photos.firstIndex(where: {$0.id == item.id}) {
                                         if index <= 9 {
                                             withAnimation {
                                                 isShowingBackToTopButton = false
@@ -87,7 +87,7 @@ struct FeedView: View {
                                         
                                         
                                         
-                                        if index == self.viewModel.userPhotoItems.count - 3 && !viewModel.isFetching {
+                                        if index == self.viewModel.photos.count - 3 && !viewModel.isFetching {
                                             viewModel.loadAdditionalPhotoItems(query: !searchQuery.isEmpty ? searchQuery : "yorkshire")
                                         }
                                     }
@@ -102,6 +102,7 @@ struct FeedView: View {
                         }
                         
                     }
+                    
                 }
                 .onAppear {
                     if !initialSearchPerformed {
@@ -112,7 +113,7 @@ struct FeedView: View {
                         }
                     }
                 }
-                .navigationTitle("Gallery")
+                .navigationTitle("Photos")
                 .overlay(
                     VStack {
                         Spacer()
@@ -144,16 +145,18 @@ struct FeedView: View {
                         }
                     },
                     alignment: .bottom
-                )// Overlay alignment
+                )
                 
             }
-            
-            
-            
+            .refreshable {
+                isLoadingContent = true
+                await viewModel.loadInitialPhotoItems(query: searchQuery.isEmpty ? "Yorkshire" : searchQuery)
+                isLoadingContent = false
+            }
         }
         .searchable(text: $searchQuery)
         .onSubmit(of: .search, {
-            viewModel.userPhotoItems = []
+            viewModel.photos = []
             isLoadingContent = true
             
             Task {

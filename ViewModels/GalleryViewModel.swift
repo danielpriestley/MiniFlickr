@@ -11,15 +11,15 @@ import Foundation
 class GalleryViewModel: ObservableObject {
     let network = NetworkService.shared
     
-    @Published var galleryPhotos: [UserPhotoItem] = []
+    @Published var galleryPhotos: [Photo] = []
     @Published var isFetching: Bool = false
     
-    func getGalleryPhotos(user: User, galleryId: String) async {
+    func getGalleryPhotos(userId: String, galleryId: String) async {
         isFetching = true
         
         Task {
             do {
-                self.galleryPhotos = try await network.fetchGalleryPhotos(user: user, galleryId: galleryId, perPage: 10, page: 1 )
+                self.galleryPhotos = try await network.fetchGalleryPhotos(userId: userId, galleryId: galleryId, perPage: 10, page: 1 )
                 print("Loaded initial gallery photos")
             }
             catch {
@@ -31,12 +31,12 @@ class GalleryViewModel: ObservableObject {
         isFetching = false
     }
     
-    func loadAdditionalGalleryPhotos(galleryId: String, user: User) {
+    func loadAdditionalGalleryPhotos(galleryId: String, userId: String) {
         isFetching = true
         
         Task {
             do {
-                let newGalleryPhotos = try await network.fetchGalleryPhotos(user: user, galleryId: galleryId, perPage: 10, page: (galleryPhotos.count / 10) + 1)
+                let newGalleryPhotos = try await network.fetchGalleryPhotos(userId: userId, galleryId: galleryId, perPage: 10, page: (galleryPhotos.count / 10) + 1)
                 self.galleryPhotos.append(contentsOf: newGalleryPhotos)
                 print("Loaded additional gallery photos")
             }

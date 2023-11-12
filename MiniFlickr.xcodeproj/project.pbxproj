@@ -33,9 +33,6 @@
 		D951D9112AF3134F009AD8EB /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = D951D9102AF3134F009AD8EB /* User.swift */; };
 		D951D9122AF3134F009AD8EB /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = D951D9102AF3134F009AD8EB /* User.swift */; };
 		D951D9132AF3134F009AD8EB /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = D951D9102AF3134F009AD8EB /* User.swift */; };
-		D951D9152AF317D9009AD8EB /* UserPhotoItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = D951D9142AF317D9009AD8EB /* UserPhotoItem.swift */; };
-		D951D9162AF317D9009AD8EB /* UserPhotoItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = D951D9142AF317D9009AD8EB /* UserPhotoItem.swift */; };
-		D951D9172AF317D9009AD8EB /* UserPhotoItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = D951D9142AF317D9009AD8EB /* UserPhotoItem.swift */; };
 		D96034BA2AFEE50400C80D4B /* HTMLTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D96034B92AFEE50400C80D4B /* HTMLTextView.swift */; };
 		D97F73012AF16A290014EFAB /* MiniFlickrApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D97F73002AF16A290014EFAB /* MiniFlickrApp.swift */; };
 		D97F73032AF16A290014EFAB /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D97F73022AF16A290014EFAB /* ContentView.swift */; };
@@ -93,7 +90,6 @@
 		D951D8FD2AF1E939009AD8EB /* URLSessionProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionProtocol.swift; sourceTree = "<group>"; };
 		D951D9012AF1F50F009AD8EB /* TestStubs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestStubs.swift; sourceTree = "<group>"; };
 		D951D9102AF3134F009AD8EB /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
-		D951D9142AF317D9009AD8EB /* UserPhotoItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserPhotoItem.swift; sourceTree = "<group>"; };
 		D96034B92AFEE50400C80D4B /* HTMLTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTMLTextView.swift; sourceTree = "<group>"; };
 		D97F72FD2AF16A290014EFAB /* MiniFlickr.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MiniFlickr.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D97F73002AF16A290014EFAB /* MiniFlickrApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiniFlickrApp.swift; sourceTree = "<group>"; };
@@ -249,7 +245,6 @@
 			children = (
 				D97F73432AF183580014EFAB /* Photo.swift */,
 				D951D9102AF3134F009AD8EB /* User.swift */,
-				D951D9142AF317D9009AD8EB /* UserPhotoItem.swift */,
 				D94491B52AF9C1300095B0D5 /* Gallery.swift */,
 				D998CDF52AFF303F0077DE92 /* Tips.swift */,
 			);
@@ -452,7 +447,6 @@
 				D97F73422AF16F2B0014EFAB /* Secrets.swift in Sources */,
 				D951D9112AF3134F009AD8EB /* User.swift in Sources */,
 				D97F73032AF16A290014EFAB /* ContentView.swift in Sources */,
-				D951D9152AF317D9009AD8EB /* UserPhotoItem.swift in Sources */,
 				D9BC9FC82AFDEF400048426E /* GalleryViewModel.swift in Sources */,
 				D9BC9FC62AFDEF240048426E /* GalleryView.swift in Sources */,
 				D96034BA2AFEE50400C80D4B /* HTMLTextView.swift in Sources */,
@@ -481,7 +475,6 @@
 			files = (
 				D951D90C2AF20034009AD8EB /* Photo.swift in Sources */,
 				D998CDF92AFF3E260077DE92 /* Secrets.swift in Sources */,
-				D951D9162AF317D9009AD8EB /* UserPhotoItem.swift in Sources */,
 				D951D8FF2AF1E939009AD8EB /* URLSessionProtocol.swift in Sources */,
 				D94491B72AF9C1300095B0D5 /* Gallery.swift in Sources */,
 				D951D90A2AF1FAF3009AD8EB /* NetworkService.swift in Sources */,
@@ -503,7 +496,6 @@
 			files = (
 				D951D90D2AF20035009AD8EB /* Photo.swift in Sources */,
 				D998CDFA2AFF3E270077DE92 /* Secrets.swift in Sources */,
-				D951D9172AF317D9009AD8EB /* UserPhotoItem.swift in Sources */,
 				D951D9002AF1E939009AD8EB /* URLSessionProtocol.swift in Sources */,
 				D94491B82AF9C1300095B0D5 /* Gallery.swift in Sources */,
 				D951D90B2AF1FAF4009AD8EB /* NetworkService.swift in Sources */,
