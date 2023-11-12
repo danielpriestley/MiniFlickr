@@ -63,5 +63,5 @@ Due to this, I wasn't able to follow through on the test driven development I ha
 
 Another change I would make is to utilise Swift's programmatic navigation. It's very possible to go down a rabbit hole of nested views in this application when browsing through images. For the scope of this project I thought it was still absolutely fine to use despite not having an instant pop back to the root view, but it's definitely something I would have looked to implement if I had more time.
 
-I appreciate your time reading this and for taking a look at this project :) 
+I appreciate you taking the time to read this and for taking a look at this project :) 
 
