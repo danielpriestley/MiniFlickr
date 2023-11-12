@@ -70,6 +70,7 @@ struct RemoteGalleryImageView: View {
             } catch {
                 isLoading = false
                 print("Image loading error: \(error)")
+                throw NetworkError.failedToFetchRemoteImage
             }
         }
     }

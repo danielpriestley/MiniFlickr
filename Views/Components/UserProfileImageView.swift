@@ -36,11 +36,11 @@ struct UserProfileImageView: View {
     
     private func loadImage() {
         guard let url = url else {
-            // If URL is nil, show the gray circle
             return
         }
         
         isLoading = true
+        
         Task {
             do {
                 let (data, _) = try await URLSession.shared.data(from: url)
@@ -50,6 +50,7 @@ struct UserProfileImageView: View {
                 isLoading = false
             } catch {
                 isLoading = false
+                throw NetworkError.failedToFetchRemoteImage
             }
         }
     }

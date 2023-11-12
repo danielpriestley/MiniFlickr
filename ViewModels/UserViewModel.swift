@@ -35,6 +35,7 @@ class UserViewModel: ObservableObject {
             do {
                 self.user = try await network.fetchCompleteUserInfo(forUserId: userId)
             } catch {
+                print("An error occurred while fetching new galleries: \(error)")
                 throw NetworkError.failedToFetchUserInfo
             }
         }
@@ -49,7 +50,8 @@ class UserViewModel: ObservableObject {
                 let newPhotos = try await network.fetchPhotosForUser(userId: userId, perPage: 10, page: (photos.count / 10) + 1)
                 self.photos.append(contentsOf: newPhotos)
             } catch {
-                print("An error occured while fetching new photos: \(error)")
+                print("An error occurred while fetching new galleries: \(error)")
+                throw NetworkError.failedToFetchPhotos
             }
             
             // disable fetching state
@@ -72,7 +74,8 @@ class UserViewModel: ObservableObject {
                 self.photos = try await network.fetchPhotosForUser(userId: userId, perPage: 10, page: 1)
             }
             catch {
-                print("An error occured: \(error)")
+                print("An error occurred while fetching new galleries: \(error)")
+                throw NetworkError.failedToFetchPhotosForUser
             }
             
             isFetching = false
@@ -87,7 +90,8 @@ class UserViewModel: ObservableObject {
             do {
                 self.userGalleries = try await network.fetchUserGalleries(userId: userId, page: page)
             } catch {
-                print("An error occured: \(error)")
+                print("An error occurred while fetching new galleries: \(error)")
+                throw NetworkError.failedToFetchGalleriesForUser
             }
             
             isFetching = false
@@ -118,6 +122,7 @@ class UserViewModel: ObservableObject {
                 }
             } catch {
                 print("An error occurred while fetching new galleries: \(error)")
+                throw NetworkError.failedToFetchGalleriesForUser
             }
             
             isFetching = false

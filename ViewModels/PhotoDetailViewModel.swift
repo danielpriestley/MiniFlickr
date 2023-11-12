@@ -35,6 +35,7 @@ class PhotoDetailViewModel: ObservableObject {
             }
             catch {
                 print("An error occured: \(error)")
+                throw NetworkError.failedToFetchPhotosForUser
             }
         }
     }

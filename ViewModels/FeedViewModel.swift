@@ -49,11 +49,12 @@ class FeedViewModel: ObservableObject {
     }
     
     func getTagsFromPhoto(photo: Photo, tagAmount: Int) -> [String] {
-        guard let tagsString = photo.tags else {
+        guard let tagsString = photo.tags?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !tagsString.isEmpty else {
             return []
         }
-        
-        let allTags = tagsString.components(separatedBy: " ")
+
+        let allTags = tagsString.components(separatedBy: " ").filter { !$0.isEmpty }
         let finalTags = Array(allTags.prefix(tagAmount))
         return finalTags
     }

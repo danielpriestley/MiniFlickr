@@ -16,6 +16,8 @@ enum NetworkError: Error {
     case failedToFetchPhotosFromGallery
     case failedToFetchPhotosForUser
     case failedToFetchPhotos
+    case failedToFetchTags
+    case failedToFetchRemoteImage
     case urlIssue
 }
 
@@ -86,11 +88,10 @@ class NetworkService {
         // decode the response
         let apiResponse = try decoder.decode(FlickrApiResponse<FlickrUser>.self, from: data)
         
-        // throw userNotFound error if no user found for that username
         if let nsid = apiResponse.user?.nsid {
             return nsid
         } else if apiResponse.stat == "fail" {
-            // Handle failure according to the "code" and "message" from the response
+            // throw userNotFound error if no user found for that username
             throw NetworkError.userNotFound
         } else {
             // If response does not contain an nsid and is not a failure, throw a generic error

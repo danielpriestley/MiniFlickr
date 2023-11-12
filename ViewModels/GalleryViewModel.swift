@@ -20,10 +20,10 @@ class GalleryViewModel: ObservableObject {
         Task {
             do {
                 self.galleryPhotos = try await network.fetchGalleryPhotos(userId: userId, galleryId: galleryId, perPage: 10, page: 1 )
-                print("Loaded initial gallery photos")
             }
             catch {
                 print("An error occured getting gallery photos: \(error)")
+                throw NetworkError.failedToFetchPhotosFromGallery
             }
             
         }
@@ -38,10 +38,10 @@ class GalleryViewModel: ObservableObject {
             do {
                 let newGalleryPhotos = try await network.fetchGalleryPhotos(userId: userId, galleryId: galleryId, perPage: 10, page: (galleryPhotos.count / 10) + 1)
                 self.galleryPhotos.append(contentsOf: newGalleryPhotos)
-                print("Loaded additional gallery photos")
             }
             catch {
                 print("An error occured getting additional gallery photos: \(error)")
+                throw NetworkError.failedToFetchPhotosFromGallery
             }
         }
         

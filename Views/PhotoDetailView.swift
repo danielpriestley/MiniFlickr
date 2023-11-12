@@ -9,6 +9,7 @@ import SwiftUI
 
 struct PhotoDetailView: View {
     @StateObject private var viewModel = PhotoDetailViewModel()
+    
     var photo: Photo
     
     var body: some View {
@@ -92,14 +93,11 @@ struct PhotoDetailView: View {
                         .frame(height: 120)
                     }
                     
-                    
                     Spacer()
-                    
-                    
+    
                 }
             }
             .padding()
-            
             .onAppear {
                 Task {
                     await viewModel.getMorePhotosFromUser(userId: photo.owner, currentPhotoId: photo.id)

@@ -128,6 +128,26 @@ final class NetworkServiceTests: XCTestCase {
         XCTAssertEqual(photos.first?.tags?.contains("falkirk"), true, "expected to find falkirk in photo tags")
     }
     
+    func testFetchPhotosByTagError() async throws {
+        // given
+        mockSession.mockedData = Data()
+        mockSession.mockedError = NetworkError.failedToFetchTags
+        
+        do {
+            // when
+            _ = try await networkService.fetchPhotos(withQuery: "falkirk", page: 1)
+            XCTFail("Expected failed to fetch tags error")
+        } catch {
+            
+            if let networkError = error as? NetworkError {
+                // then
+                XCTAssertEqual(networkError, .failedToFetchTags, "Expected failed to fetch tags error")
+            } else {
+                XCTFail("Expected failed to fetch tags error but recieved a different kind of error")
+            }
+        }
+    }
+    
     func testFetchPhotosByUsernameSuccess() async throws {
         // given
         let username = "flickr"
