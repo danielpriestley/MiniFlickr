@@ -3,7 +3,7 @@
 ### Usage
 
 
-For security reasons, I don't feel comfortable publicly uploading my Secrets file to GitHub, so I the empty strings in this field will require the API key and secret I provided in the email to be entered in order for the application to work correctly. 
+For security reasons, I don't feel comfortable publicly uploading my Secrets file to GitHub, so I the empty strings in this file will require the API key and secret I provided in the email to be entered in order for the application to work correctly. 
 
 ### Overview
 
@@ -62,6 +62,8 @@ Primarily the thing I would like to change is more comprehensive testing. As thi
 Due to this, I wasn't able to follow through on the test driven development I had planned to work with from the start, and pushed back tests until the last minute. If I had more time, I think I would have provided more complete test coverage, and tested more than just the core functionality - for example, testing individual ViewModels and UI Testing. 
 
 Another change I would make is to utilise Swift's programmatic navigation. It's very possible to go down a rabbit hole of nested views in this application when browsing through images. For the scope of this project I thought it was still absolutely fine to use despite not having an instant pop back to the root view, but it's definitely something I would have looked to implement if I had more time.
+
+Finally, I think the app would benefit from handling errors visually in the UI. Feedback when a user couldnt be found for example would be a nice quality of life change.
 
 I appreciate you taking the time to read this and for taking a look at this project :) 
 
