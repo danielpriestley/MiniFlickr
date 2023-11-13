@@ -9,10 +9,11 @@ import Foundation
 
 @MainActor
 class FeedViewModel: ObservableObject {
+    let network = NetworkService.shared
+    
     @Published var photos: [Photo] = []
     @Published var isFetching: Bool = false
-    
-    let network = NetworkService.shared
+    @Published var errorMessage: NetworkError? = nil
     
     func loadInitialPhotoItems(query: String) async {
         Task {
@@ -20,6 +21,7 @@ class FeedViewModel: ObservableObject {
                 self.photos = try await network.fetchPhotos(withQuery: query, page: 1)
             } catch {
                 print("An error occured: \(error)")
+                errorMessage = .failedToFetchPhotos
                 throw NetworkError.failedToFetchPhotos
             }
         }
@@ -35,6 +37,7 @@ class FeedViewModel: ObservableObject {
                 self.photos.append(contentsOf: photoItems)
             } catch {
                 print("An error occured while fetching new photos: \(error)")
+                errorMessage = .failedToFetchPhotos
                 throw NetworkError.failedToFetchPhotos
             }
         }

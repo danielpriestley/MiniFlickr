@@ -135,7 +135,9 @@ struct UserView: View {
                     
                 }
                 
-                
+                if let error = viewModel.errorMessage {
+                    ErrorView(error: error)
+                }
             }
             
         }

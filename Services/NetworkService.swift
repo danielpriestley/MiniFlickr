@@ -7,20 +7,6 @@
 
 import Foundation
 
-enum NetworkError: Error {
-    case userNotFound
-    case generalError
-    case failedToFetchProfileInfo
-    case failedToFetchUserInfo
-    case failedToFetchGalleriesForUser
-    case failedToFetchPhotosFromGallery
-    case failedToFetchPhotosForUser
-    case failedToFetchPhotos
-    case failedToFetchTags
-    case failedToFetchRemoteImage
-    case urlIssue
-}
-
 class NetworkService {
     static var shared = NetworkService()
     
@@ -105,7 +91,7 @@ class NetworkService {
         let decoder = JSONDecoder()
         
         // ensure url is valid
-        guard let url = URL(string: "https://www.flickr.com/services/rest/?method=flickr.people.getPublicPhotos&api_key=\(Secrets.apiKey)&format=json&nojsoncallback=1&safe_search=1&extras=tags,date_upload,license,description, owner_name,icon_server&user_id=\(userId)&per_page=\(perPage)&page=\(page)") 
+        guard let url = URL(string: "https://www.flickr.com/services/rest/?method=flickr.people.getPublicPhotos&api_key=\(Secrets.apiKey)&format=json&nojsoncallback=1&safe_search=1&extras=tags,date_upload,license,description, owner_name,icon_server&user_id=\(userId)&per_page=\(perPage)&page=\(page)")
         else {
             throw NetworkError.urlIssue
         }

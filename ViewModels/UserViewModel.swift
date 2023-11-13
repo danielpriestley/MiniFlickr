@@ -16,7 +16,8 @@ class UserViewModel: ObservableObject {
     @Published var userGalleries: [Gallery] = []
     @Published var allGalleriesLoaded = false
     @Published var user: User?
-    
+    @Published var errorMessage: NetworkError? = nil
+
     private var hasFetchedData = false
     
     func fetchDataIfNeeded(userId: String, page: Int) async {
@@ -35,7 +36,8 @@ class UserViewModel: ObservableObject {
             do {
                 self.user = try await network.fetchCompleteUserInfo(forUserId: userId)
             } catch {
-                print("An error occurred while fetching new galleries: \(error)")
+                print("An error occurred getting user information: \(error)")
+                errorMessage = .failedToFetchUserInfo
                 throw NetworkError.failedToFetchUserInfo
             }
         }
@@ -50,7 +52,8 @@ class UserViewModel: ObservableObject {
                 let newPhotos = try await network.fetchPhotosForUser(userId: userId, perPage: 10, page: (photos.count / 10) + 1)
                 self.photos.append(contentsOf: newPhotos)
             } catch {
-                print("An error occurred while fetching new galleries: \(error)")
+                print("An error occurred while fetching additional photos: \(error)")
+                errorMessage = .failedToFetchPhotos
                 throw NetworkError.failedToFetchPhotos
             }
             
@@ -74,7 +77,8 @@ class UserViewModel: ObservableObject {
                 self.photos = try await network.fetchPhotosForUser(userId: userId, perPage: 10, page: 1)
             }
             catch {
-                print("An error occurred while fetching new galleries: \(error)")
+                print("An error occurred while fetching photos for user: \(error)")
+                errorMessage = .failedToFetchPhotosForUser
                 throw NetworkError.failedToFetchPhotosForUser
             }
             
@@ -90,7 +94,8 @@ class UserViewModel: ObservableObject {
             do {
                 self.userGalleries = try await network.fetchUserGalleries(userId: userId, page: page)
             } catch {
-                print("An error occurred while fetching new galleries: \(error)")
+                print("An error occurred while fetching user galleries: \(error)")
+                errorMessage = .failedToFetchGalleriesForUser
                 throw NetworkError.failedToFetchGalleriesForUser
             }
             
@@ -122,6 +127,7 @@ class UserViewModel: ObservableObject {
                 }
             } catch {
                 print("An error occurred while fetching new galleries: \(error)")
+                errorMessage = .failedToFetchGalleriesForUser
                 throw NetworkError.failedToFetchGalleriesForUser
             }
             

@@ -32,6 +32,7 @@ struct FeedView: View {
                         if isLoadingContent {
                             ProgressView()
                         } else {
+                            
                             ForEach(viewModel.photos, id: \.id) { item in
                                 VStack {
                                     NavigationLink(destination: UserView(userId: item.owner, profileImageUrl: item.profileImageUrl)) {
@@ -95,6 +96,10 @@ struct FeedView: View {
                                 
                             }
                             .id(0)
+                            
+                            if let error = viewModel.errorMessage {
+                                ErrorView(error: error)
+                            }
                         }
                         
                         if viewModel.isFetching {

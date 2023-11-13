@@ -13,6 +13,7 @@ class GalleryViewModel: ObservableObject {
     
     @Published var galleryPhotos: [Photo] = []
     @Published var isFetching: Bool = false
+    @Published var errorMessage: NetworkError? = nil
     
     func getGalleryPhotos(userId: String, galleryId: String) async {
         isFetching = true
@@ -23,6 +24,7 @@ class GalleryViewModel: ObservableObject {
             }
             catch {
                 print("An error occured getting gallery photos: \(error)")
+                errorMessage = .failedToFetchPhotosFromGallery
                 throw NetworkError.failedToFetchPhotosFromGallery
             }
             
@@ -41,6 +43,7 @@ class GalleryViewModel: ObservableObject {
             }
             catch {
                 print("An error occured getting additional gallery photos: \(error)")
+                errorMessage = .failedToFetchPhotosFromGallery
                 throw NetworkError.failedToFetchPhotosFromGallery
             }
         }
