@@ -3,7 +3,7 @@
 ### Usage
 
 
-For security reasons, I don't feel comfortable publicly uploading my Secrets file to GitHub, so I the empty strings in this file will require the API key and secret to be entered in order for the application to work correctly. 
+For security reasons, I don't feel comfortable publicly uploading my Secrets file to GitHub, so I the empty strings in this file will require an API key and secret to be entered in order for the application to work correctly. 
 
 ### Overview
 
